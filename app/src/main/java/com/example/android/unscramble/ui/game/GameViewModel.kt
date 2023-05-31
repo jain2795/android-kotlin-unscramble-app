@@ -1,6 +1,8 @@
 package com.example.android.unscramble.ui.game
 
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 class GameViewModel : ViewModel() {
@@ -9,18 +11,23 @@ class GameViewModel : ViewModel() {
 
     private lateinit var currentWord: String
 
-    private lateinit var _currentScrambledWord: String
+    private val _currentScrambledWord: MutableLiveData<String> = MutableLiveData()
 
     //  backing property concept in Kotlin
-    val currentScrambledWord: String
+    val currentScrambledWord: LiveData<String>
         get() = _currentScrambledWord
 
-    private var _currentWordCount = 0
-    val currentWordCount: Int
+    private val _currentWordCount: MutableLiveData<Int> = MutableLiveData(0)
+    val currentWordCount: MutableLiveData<Int>
         get() = _currentWordCount
 
-    private var _score = 0
-    val score: Int
+    /**
+     *  val because the value of the LiveData/MutableLiveData object will remain the same,
+     *  and only the data stored within the object will change
+     */
+
+    private val _score: MutableLiveData<Int> = MutableLiveData(0)
+    val score: MutableLiveData<Int>
         get() = _score
 
     // This init block of code is run when the object instance is first created and initialized.
@@ -29,7 +36,7 @@ class GameViewModel : ViewModel() {
         getNextWord()
     }
 
-    // Right before the ViewModel is destroyed, the onCleared() callback is called.
+    // Right before the ViewModel is destroyed, the onCleared() callback is called. This is not getting printed in the logs. Need to debug this
     override fun onCleared() {
         super.onCleared()
         Log.d("GameFragment", "GameViewModel destroyed!")
@@ -46,8 +53,9 @@ class GameViewModel : ViewModel() {
         if (usedWordsList.contains(currentWord)) {
             getNextWord()
         } else {
-            ++_currentWordCount
-            _currentScrambledWord = String(tempWord)
+            // You can also do _currentWordCount.value = _currentWordCount.value?.plus(1)
+            _currentWordCount.value = _currentWordCount.value?.inc()
+            _currentScrambledWord.value = String(tempWord)
             usedWordsList.add(currentWord)
         }
     }
@@ -57,7 +65,7 @@ class GameViewModel : ViewModel() {
      * Updates the next word.
      */
     fun nextWord(): Boolean {
-        return if (_currentWordCount < MAX_NO_OF_WORDS) {
+        return if (_currentWordCount.value!! < MAX_NO_OF_WORDS) {
             getNextWord()
             true
         } else {
@@ -66,7 +74,7 @@ class GameViewModel : ViewModel() {
     }
 
     private fun increaseScore() {
-        _score += SCORE_INCREASE
+        _score.value = _score.value?.plus(SCORE_INCREASE)
     }
 
     fun isUserWordCorrect(playerWord: String): Boolean {
@@ -78,8 +86,8 @@ class GameViewModel : ViewModel() {
     }
 
     fun reinitializeData() {
-        _score = 0
-        _currentWordCount = 0
+        _score.value = 0
+        _currentWordCount.value = 0
         usedWordsList.clear()
         getNextWord()
     }

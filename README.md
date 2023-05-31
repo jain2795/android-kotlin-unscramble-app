@@ -11,8 +11,8 @@ Used in the [Android Basics with Kotlin](https://developer.android.com/courses/a
 
 Branches
 --------------
-Master - ViewModel + LiveData
-dev_rajat - ViewModel
+- Master - ViewModel + LiveData
+- dev_rajat - ViewModel
 
 
 Pre-requisites
